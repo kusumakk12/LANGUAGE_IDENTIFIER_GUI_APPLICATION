@@ -1,0 +1,10 @@
+File,Language1,Confidence1,Language2,Confidence2
+1.mp3,telugu,89.0,kannada,11.0
+2.mp3,british english,99.991,latin,0.009
+3.mp3,italian,96.5,french,3.5
+4.mp3,korean,99.982,japaneese,0.018
+5.mp3,tamil,97.08,malayalam,2.92
+6.mp3,tamil,90.0,telugu,10.0
+7.mp3,greek,89.5,british english,10.5
+8.mp3,urdu,86.8,hindi,13.2
+9.mp3,thai,79.8,vietnamese,20.2
