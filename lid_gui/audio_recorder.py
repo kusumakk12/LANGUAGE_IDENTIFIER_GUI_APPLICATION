@@ -1,7 +1,7 @@
 import sys
 import pyaudio
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QLabel
+from PyQt5.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QLabel,QMessageBox
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
@@ -12,7 +12,7 @@ class AudioRecorderDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Audio Recorder")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 300, 500, 300)
         self.setStyleSheet("""
             QDialog {
                 background-color: #f0f0f0;
@@ -41,8 +41,6 @@ class AudioRecorderDialog(QDialog):
         self.start_button = QPushButton("Start Recording")
         self.stop_button = QPushButton("Stop Recording")
         self.stop_button.setEnabled(False)
-        self.save_button = QPushButton("Save")
-        self.save_button.setEnabled(False)
         self.message_label = QLabel("Ready")
 
         # Create plot widget
@@ -54,7 +52,7 @@ class AudioRecorderDialog(QDialog):
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.start_button)
         button_layout.addWidget(self.stop_button)
-        button_layout.addWidget(self.save_button)
+        
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.message_label)
@@ -66,7 +64,7 @@ class AudioRecorderDialog(QDialog):
         # Connect button signals
         self.start_button.clicked.connect(self.start_recording)
         self.stop_button.clicked.connect(self.stop_recording)
-        self.save_button.clicked.connect(self.save_audio)
+        
 
         self.stream = None
         self.pitch_thread = None
@@ -84,7 +82,6 @@ class AudioRecorderDialog(QDialog):
         # Update button and widget states
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.save_button.setEnabled(False)
         self.message_label.setText("Recording...")
         self.plot_widget.setVisible(True)
 
@@ -106,32 +103,35 @@ class AudioRecorderDialog(QDialog):
         # Stop audio stream
         self.stream.stop_stream()
         self.stream.close()
+        self.save_audio()
 
         # Update button and widget states
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
-        self.save_button.setEnabled(True)
         self.message_label.setText("Recording stopped.")
         self.plot_widget.setVisible(False)
 
         print("Recording stopped.")
 
     def save_audio(self):
-        # Open file dialog to choose save location
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Audio", "recorded_audio.wav", "WAV Files (*.wav)")
-
-        if file_name:
-            # Save recorded audio to the chosen file
-            recorded_data = np.array(self.recorded_data, dtype=np.int16)
-            wav.write(file_name, 44100, recorded_data)
-
-            # Reset recorded data and disable save button
-            self.recorded_data = []
-            self.save_button.setEnabled(False)
-
-            print(f"Audio saved to {file_name}")
-            self.message_label.setText("Audio saved.")
-            self.file_saved.emit(file_name)
+         reply = QMessageBox.question(self, 'Save File', 'Are you sure you want to save the file?',
+                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+         if reply == QMessageBox.Yes:
+             self.accept()
+             # Open file dialog to choose save location
+             file_name, _ = QFileDialog.getSaveFileName(self, "Save Audio", "recorded_audio.wav", "WAV Files (*.wav)")
+             if file_name:
+                # Save recorded audio to the chosen file
+                recorded_data = np.array(self.recorded_data, dtype=np.int16)
+                wav.write(file_name, 44100, recorded_data)
+                # Reset recorded data and disable save button
+                self.recorded_data = []
+                print(f"Audio saved to {file_name}")
+                self.message_label.setText("Audio saved.")
+                self.file_saved.emit(file_name)
+         else:
+               self.accept()
+               print("not saved")
 
 class PitchVisualizationThread(QThread):
     data_ready = pyqtSignal(np.ndarray)
