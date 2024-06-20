@@ -29,6 +29,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
+        self.setStyleSheet(open("layout.qss", "r").read())
         self.add_plus_symbol()
         self.recordButton.clicked.connect(self.show_audio_recording_dialog)
         self.runButton.clicked.connect(self.run_button_clicked)
