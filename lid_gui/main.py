@@ -1,24 +1,16 @@
 from layout import Ui_MainWindow
 import audio_recorder
-import xlrd
-import csv
-import os
-import sys
+import csv,os,sys,xlrd,openpyxl
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QPushButton,
     QMenu, QFileDialog, QAction, QTextEdit,QDialog,QMessageBox , QSizePolicy,QComboBox,QWidget, QHBoxLayout, QLabel
 )
-from PyQt5.QtMultimedia import QAudioRecorder, QAudioEncoderSettings
-from PyQt5.QtCore import QUrl, QDir
 import pandas as pd
-import threading
 from threading import Timer
-from PyQt5 import QtWidgets
-import openpyxl
-from PyQt5.QtCore import QObject,QThread,pyqtSlot
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QObject,QThread,pyqtSlot,QUrl, QDir
 from PyQt5.QtCore import pyqtSignal as Signal
-from PyQt5.QtCore import QThreadPool, QRunnable
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -40,6 +32,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionNew.triggered.connect(self.newWindow)
         self.actionOpen_File.triggered.connect(self.upload_file)
         self.actionOpen_Folder.triggered.connect(self.upload_folder)
+        self.resultTable.cellClicked.connect(lambda row,column:self.on_resultTable_cell_clicked(row,column))
+        self.resultTable2.cellClicked.connect(lambda row,column:self.on_resultTable2_cell_clicked(row,column))
         self.saveButton.setEnabled(False)
         self.clearButton.setEnabled(False)
         self.runButton.setEnabled(False)
@@ -200,6 +194,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.filesTable.insertRow(row_position)
         self.spinner = QComboBox()
         self.spinner.setObjectName("spinner")
+        font =QFont("Arial", 12)  
+        self.spinner.setFont(font)
         self.spinner.addItem("select upload")
         self.spinner.addItem("Upload File")
         self.spinner.addItem("Upload Folder")
@@ -275,11 +271,14 @@ selection-background-color: rgb(170, 255, 255);
                 layout = QHBoxLayout()
                 layout.setContentsMargins(0,0,0,0)
                 label = QLabel(f"{file_name} ({file_size} bytes)")
+                font = QFont()
+                font.setPointSize(12) 
+                label.setFont(font)
                 label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 layout.setSpacing(0)
                 delete_button = QPushButton("X")
-                delete_button.setMinimumSize(20, 20)
-                delete_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+                delete_button.setFixedSize(18, 18)
+                delete_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 delete_button.setStyleSheet("""QPushButton{color:black;background-color:rgb(255, 115, 97);}
                                                                QPushButton:hover{color:red;background-color:white;border:2px solid red;}
                                                                QPushButton:focus{color:white;background-color:red;}""")
@@ -318,6 +317,24 @@ selection-background-color: rgb(170, 255, 255);
                     break
         if self.filesTable.rowCount()==self.capacity:
              self.spinner.setEnabled(True)
+    def on_resultTable_cell_clicked(self, row,column):
+        num_rows = self.resultTable2.rowCount()
+        if row >= num_rows:
+            row = num_rows - 1
+        self.resultTable2.scrollToItem(self.resultTable2.item(row, 0))
+        self.resultTable2.setVisible(True)
+        self.resultTab.setCurrentIndex(1)
+        self.resultTable2.setFocus()  
+        self.resultTable2.selectRow(row)
+    def on_resultTable2_cell_clicked(self, row,column):
+        num_rows = self.resultTable.rowCount()
+        if row >= num_rows:
+            row = num_rows - 1
+        self.resultTable.scrollToItem(self.resultTable.item(row, 0))
+        self.resultTable.setVisible(True)
+        self.resultTab.setCurrentIndex(0)
+        self.resultTable.setFocus()  
+        self.resultTable.selectRow(row)
         
 def main():
     app = QApplication(sys.argv)
