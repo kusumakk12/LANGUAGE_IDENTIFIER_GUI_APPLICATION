@@ -345,13 +345,3 @@ class Ui_MainWindow(object):
         self.actionNew.setText(_translate("MainWindow", "New"))
         self.actionOpen_File.setText(_translate("MainWindow", "Open File"))
         self.actionOpen_Folder.setText(_translate("MainWindow", "Open Folder"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
