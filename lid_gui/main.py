@@ -1,4 +1,3 @@
-
 from layout import Ui_MainWindow
 import audio_recorder
 import xlrd
@@ -6,8 +5,6 @@ import csv
 import os
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QPushButton,
     QMenu, QFileDialog, QAction, QTextEdit,QDialog,QMessageBox , QSizePolicy,QComboBox,QWidget, QHBoxLayout, QLabel
@@ -28,6 +25,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    capacity=3
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
@@ -37,18 +35,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stopButton.clicked.connect(self.stop_button_clicked)
         self.saveButton.clicked.connect(self.save_button_clicked)
         self.clearButton.clicked.connect(self.clear_button_clicked)
+        self.clearfilesButton.clicked.connect(self.clearfiles_clicked)
         self.actionNew.triggered.connect(self.newWindow)
+        self.actionOpen_File.triggered.connect(self.upload_file)
+        self.actionOpen_Folder.triggered.connect(self.upload_folder)
         self.saveButton.setEnabled(False)
         self.clearButton.setEnabled(False)
         self.runButton.setEnabled(False)
         self.stopButton.setEnabled(False)
+        self.clearfilesButton.setEnabled(False)
 
     def newWindow(self):
-        def runnable():
-            window = MainWindow()
-            window.show()
-        threading.Thread(target=runnable).start()
-        
+        window = MainWindow()
+        self.windows = getattr(self, 'windows', []) + [window]
+        window.show()
+        window.raise_()        
     def show_audio_recording_dialog(self):
         self.statusbar.showMessage("recording")
         dialog = audio_recorder.AudioRecorderDialog()
@@ -81,7 +82,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.statusbar.showMessage("files processed")
                 else:
                      self.statusbar.showMessage("processing has been stopped externally")
-                return  # Stop after all rows are inserted
+                return  
             if i <= len(data) and  stop_insertion==False:
                 filename_item = QtWidgets.QTableWidgetItem(data.loc[i, 'Filename'])
                 language_item1 = QtWidgets.QTableWidgetItem(data.loc[i, 'Language1'])
@@ -108,8 +109,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # Schedule next row insertion with 5 seconds delay
                 timer = Timer(2.0, lambda: insert_row(i + 1))
                 timer.start()
-
-        # Start inserting the first row
         timer=Timer(2.0,lambda:insert_row(0))
         timers.append(timer)
         timer.start()
@@ -118,12 +117,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         global stop_insertion
         stop_insertion=False
         self.saveButton.setEnabled(False)
+        self.recordButton.setEnabled(False)
         self.clearButton.setEnabled(False)
         self.stopButton.setEnabled(True)
         self.runButton.setEnabled(False)
         if self.filesTable.rowCount()>1:
             self.statusbar.showMessage("files processing")
-            # Schedule population with 5 seconds delay
             timer = Timer(3.0, self.populate_table)
             timer.start()
         else:
@@ -134,6 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearButton.setEnabled(True)
         self.runButton.setEnabled(True)
         self.stopButton.setEnabled(False)
+        self.recordButton.setEnabled(True)
         global stop_insertion
         print("stop_button_clicked")
         stop_insertion=True
@@ -152,22 +152,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.resultTable2.setRowCount(0)
         
     def save_to_csv(self, filename, table):
-        """Saves the data from the provided table to a CSV file.
-
-        Returns:
-            True on success, False on failure.
-        """
         try:
             with open(filename, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
-
-                # Write header row
                 header_row = []
                 for col in range(table.columnCount()):
                     header_row.append(table.horizontalHeaderItem(col).text())
                 csv_writer.writerow(header_row)
-
-                # Write data rows
                 for row in range(table.rowCount()):
                     data_row = []
                     for col in range(table.columnCount()):
@@ -177,11 +168,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         else:
                             data_row.append("")  # Handle empty cells
                     csv_writer.writerow(data_row)
-            return True  # Indicate successful save
+            return True 
         except Exception as e:
             print("Error", f"Failed to save file: {e}")
             self.statusbar.showMessage("Failed to save file", 2000)
-            return False  # Indicate failure
+            return False 
 
     
 
@@ -199,16 +190,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.statusbar.showMessage("Failed to save file", 2000)
         else:
              self.statusbar.showMessage("no data to save")
+    def clearfiles_clicked(self):  
+        self.filesTable.setRowCount(0)
+        self.add_plus_symbol()  
 
     def add_plus_symbol(self):
         row_position = self.filesTable.rowCount()
         self.filesTable.insertRow(row_position)
         self.spinner = QComboBox()
+        self.spinner.setObjectName("spinner")
         self.spinner.addItem("select upload")
         self.spinner.addItem("Upload File")
         self.spinner.addItem("Upload Folder")
+        self.spinner.setStyleSheet("""QComboBox{ 
+	selection-color: rgb(170, 85, 255);
+selection-background-color: rgb(170, 255, 255);
+}""")
         self.spinner.currentTextChanged.connect(self.spinner_selected)
-        self.filesTable.setCellWidget(row_position, 0, self.spinner)
+        self.filesTable.setCellWidget(row_position, 0, self.spinner) 
+        if self.filesTable.rowCount()>self.capacity:
+            self.spinner.setEnabled(False)
 
     def spinner_selected(self, text):
         if text == "Upload File":
@@ -224,25 +225,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("plus_button_removed")
     def upload_file(self):
         print("Upload file clicked")
-        file_name, _ = QFileDialog.getOpenFileName(None, "Upload File", filter="MP3 files (*.mp3);WAV fies(*.wav)")
-        if file_name:
-            self.add_file_to_table([file_name])
+        if self.filesTable.rowCount()<=self.capacity:
+            file_name, _ = QFileDialog.getOpenFileName(None, "Upload File", filter="MP3 files (*.mp3);WAV fies(*.wav)")
+            if file_name:
+                self.add_file_to_table([file_name])
 
     def upload_folder(self):
         print("Upload folder clicked")
-        folder_name = QFileDialog.getExistingDirectory(None, "Upload Folder")
-        if folder_name:
-            file_paths = [
-                os.path.join(folder_name, f) for f in os.listdir(folder_name)
-                if os.path.isfile(os.path.join(folder_name, f)) and (f.lower().endswith('.mp3') or f.lower().endswith('.wav')) 
-            ]
-            non_mp3_files = [
-                f for f in os.listdir(folder_name)
-                if os.path.isfile(os.path.join(folder_name, f)) and not (f.lower().endswith('.mp3') or f.lower().endswith('.wav'))
-            ]
-            if non_mp3_files:
-                self.statusbar.showMessage(f"Selected folder '{os.path.basename(folder_name)}' has non-MP3 files which will not be processed: {', '.join(non_mp3_files)}")
-            self.add_file_to_table(file_paths)
+        if self.filesTable.rowCount()<=self.capacity:
+            folder_name = QFileDialog.getExistingDirectory(None, "Upload Folder")
+            if folder_name:
+                file_paths = [
+                    os.path.join(folder_name, f) for f in os.listdir(folder_name)
+                    if os.path.isfile(os.path.join(folder_name, f)) and (f.lower().endswith('.mp3') or f.lower().endswith('.wav')) 
+                ]
+                non_mp3_files = [
+                    f for f in os.listdir(folder_name)
+                    if os.path.isfile(os.path.join(folder_name, f)) and not (f.lower().endswith('.mp3') or f.lower().endswith('.wav'))
+               ]
+                if non_mp3_files:
+                    self.statusbar.showMessage(f"Selected folder '{os.path.basename(folder_name)}' has non-MP3 files which will not be processed: {', '.join(non_mp3_files)}")
+                self.add_file_to_table(file_paths)
     
     def add_file_to_table(self, file_paths):
         existing_files = []
@@ -254,50 +257,53 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     label = layout.itemAt(0).widget()
                     if label:
                         existing_files.append(label.text().split(' (')[0])
-
         new_files = [file_path for file_path in file_paths if os.path.basename(file_path) not in existing_files]
         duplicate_files = [file_path for file_path in file_paths if os.path.basename(file_path) in existing_files]
-
         if duplicate_files:
             duplicate_names = ', '.join(os.path.basename(file_path) for file_path in duplicate_files)
             self.statusbar.showMessage(f"The following files are already uploaded: {duplicate_names}")
             QMessageBox.information(self, "Duplicate Files", f"The following files are already uploaded:\n{duplicate_names}")
-
         self.remove_plus_symbol()
         self.statusbar.showMessage(" ")
-
         for file_path in new_files:
-            file_name = os.path.basename(file_path)
-            file_size = os.path.getsize(file_path)
-            row_position = self.filesTable.rowCount()
-            self.filesTable.insertRow(row_position)
-
-            # Create a horizontal box layout for the first column
-            layout = QHBoxLayout()
-            label = QLabel(f"{file_name} ({file_size} bytes)")
-            delete_button = QPushButton("X")
-            delete_button.setFixedSize(20, 20)
-            delete_button.clicked.connect(lambda checked, file_name=file_name: self.delete_file(file_name))
-            layout.addWidget(label)
-            layout.addWidget(delete_button)
-            widget = QWidget()
-            widget.setStyleSheet("QWidget { background-color: transparent; }")
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            widget.setLayout(layout)
-            self.filesTable.setCellWidget(row_position, 0, widget)
-
-            # Remove the other columns
-            self.filesTable.removeColumn(1)
-            self.filesTable.removeColumn(2)
-
+            if self.filesTable.rowCount()<self.capacity:
+                file_name = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                row_position = self.filesTable.rowCount()
+                self.filesTable.insertRow(row_position)
+                layout = QHBoxLayout()
+                layout.setContentsMargins(0,0,0,0)
+                label = QLabel(f"{file_name} ({file_size} bytes)")
+                label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                layout.setSpacing(0)
+                delete_button = QPushButton("X")
+                delete_button.setMinimumSize(20, 20)
+                delete_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+                delete_button.setStyleSheet("""QPushButton{color:black;background-color:rgb(255, 115, 97);}
+                                                               QPushButton:hover{color:red;background-color:white;border:2px solid red;}
+                                                               QPushButton:focus{color:white;background-color:red;}""")
+                delete_button.setFocusPolicy(QtCore.Qt.ClickFocus)
+                delete_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                delete_button.clicked.connect(lambda checked, file_name=file_name: self.delete_file(file_name))
+                layout.addWidget(label)
+                layout.addWidget(delete_button)
+                widget = QWidget()
+                widget.setStyleSheet("QWidget { background-color: transparent; }")
+                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                widget.setLayout(layout)
+                self.filesTable.setCellWidget(row_position, 0, widget)
+            else:
+                QMessageBox.information(self.centralwidget,"Information!", 'uploaded more files than the processing capacity for a time! only few files are uploaded',buttons=QMessageBox.Ok)
+                break
         self.add_plus_symbol()
         if self.filesTable.rowCount() > 1:
-            self.runButton.setEnabled(True)
+             self.runButton.setEnabled(True)
+             self.clearfilesButton.setEnabled(True)
         else:
-            self.runButton.setEnabled(False)
-         
+             self.runButton.setEnabled(False)
+             self.clearfilesButton.setEnabled(False)
+  
     def delete_file(self, file_name):
-        # Confirm deletion with a message box
         reply = QMessageBox.question(self.centralwidget, 'Delete File', 'Are you sure you want to delete this file?',
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
@@ -309,11 +315,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if file_label_text == file_name:
                     self.filesTable.removeRow(row)
                     break
-
+        if self.filesTable.rowCount()==self.capacity:
+             self.spinner.setEnabled(True)
         
-
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
