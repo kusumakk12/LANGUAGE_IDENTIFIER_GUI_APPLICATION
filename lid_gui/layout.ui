@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>856</width>
-    <height>533</height>
+    <width>702</width>
+    <height>554</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@ background-color:white;
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
     <string notr="true">QWidget{
-background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 255, 255, 255), stop:1 rgba(255, 255, 255, 255));
+background-color:rgb(235, 252, 255);
 }</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -91,7 +91,7 @@ color:rgb(255,255,255);
          <string>LANGUAGE IDENTIFIER</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignHCenter|Qt::AlignTop</set>
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -152,12 +152,15 @@ color:rgb(255,255,255);
             <bold>true</bold>
            </font>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::ClickFocus</enum>
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-background-color:rgb(0, 255, 255);
+background-color:qconicalgradient(cx:0, cy:0, angle:0, stop:0 rgba(0, 213, 213, 255), stop:1 rgba(255, 255, 255, 255));
 border-radius:20px;
 color:rgb(0, 147, 147);
 border:1px solid rgb(0,147,147);
@@ -216,15 +219,18 @@ background-color:rgb(0,147,147);
             <kerning>true</kerning>
            </font>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::ClickFocus</enum>
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-background-color:rgb(35, 204, 255);
-color:rgb(255, 255, 0);
+background-color:qconicalgradient(cx:0.919, cy:1, angle:0, stop:0 rgba(103, 222, 255, 255), stop:1 rgba(165, 255, 212, 255));
+color:rgb(170, 0, 255);
 border-radius:20px;
-border:1px solid rgb(255,255,0);
+border:1px solid rgb(0,147,147);
 }
 QPushButton:hover{
 background-color:rgb(255, 255, 255);
@@ -272,15 +278,18 @@ background-color:rgb(255,170,0);
             <bold>true</bold>
            </font>
           </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::ClickFocus</enum>
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{
-background-color:rgb(35, 204, 255);
-color:rgb(255, 255, 0);
+background-color:qconicalgradient(cx:0.919, cy:1, angle:0, stop:0 rgba(103, 222, 255, 255), stop:1 rgba(165, 255, 212, 255));
+color:rgb(255, 85, 0);
 border-radius:20px;
-border:1px solid rgb(255,85,0);
+border:1px solid rgb(0,147,147);
 }
 QPushButton:hover{
 background-color:rgb(255, 255, 255);
@@ -327,6 +336,9 @@ background-color:rgb(255,85,0);
             <italic>true</italic>
             <bold>true</bold>
            </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="focusPolicy">
            <enum>Qt::ClickFocus</enum>
@@ -383,6 +395,9 @@ background-color:rgb(0,85,0);
             <italic>true</italic>
             <bold>true</bold>
            </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="focusPolicy">
            <enum>Qt::ClickFocus</enum>
@@ -503,6 +518,13 @@ border:1px solid black;
              <layout class="QHBoxLayout" name="filesLayout">
               <item>
                <widget class="QTableWidget" name="filesTable">
+                <property name="font">
+                 <font>
+                  <pointsize>14</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="styleSheet">
                  <string notr="true">QTableWidget{
 border:1px solid white;
@@ -525,14 +547,48 @@ border:1px solid white;
                   <string>File</string>
                  </property>
                 </column>
-                <column>
-                 <property name="text">
-                  <string>Size</string>
-                 </property>
-                </column>
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="clearfilesButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="font">
+               <font>
+                <family>Arial Rounded MT Bold</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::ClickFocus</enum>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+background-color:rgb(35, 204, 255);
+color:rgb(0, 0, 127);
+border-radius:20px;
+border:1px solid rgb(0, 0, 127); 
+}
+QPushButton:hover{
+background-color:rgb(255, 255, 255);
+color:rgb(0, 85, 127);
+border:2px solid rgb(35, 204, 255);
+}
+QPushButton:focus{
+background-color:rgb(0, 85, 127);
+color:white;
+}</string>
+              </property>
+              <property name="text">
+               <string>Clear Selected Files</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -564,7 +620,7 @@ border:1px solid white;
           </property>
           <property name="styleSheet">
            <string notr="true">QTabWidget{
-background-color:rgb(85, 255, 255);
+background-color:rgb(225, 225, 225);
 color:white;
 }</string>
           </property>
@@ -600,7 +656,7 @@ border:1px solid white;
 }</string>
                 </property>
                 <property name="verticalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAlwaysOn</enum>
+                 <enum>Qt::ScrollBarAsNeeded</enum>
                 </property>
                 <property name="alternatingRowColors">
                  <bool>true</bool>
@@ -710,7 +766,7 @@ border:1px solid white;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>856</width>
+     <width>702</width>
      <height>23</height>
     </rect>
    </property>
