@@ -1,145 +1,97 @@
 QMainWindow{
-background-color:white;
+    background-color:rgb(240, 251, 255);
 }
-
-QWidget#centralwidget{
-background-color:rgb(235, 252, 255);
+QWidget#centralwidget,QStackedWidget,QTableWidget{
+    background-color:rgb(250, 225, 255);
 }
-
-QLabel#LIDlabel{
-background-color:qradialgradient(spread:repeat, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.905263 rgba(0, 207, 207, 255), stop:1 rgba(255, 255, 255, 255));
-color:rgb(255,255,255);
+QWidget#side_bar,#sidebar_2{
+    background-color:rgb(224, 219, 255);
+    border-radius:10px;
+    width:150px;
 }
-
-QPushButton#recordButton{
-background-color:qconicalgradient(cx:0, cy:0, angle:0, stop:0 rgba(0, 213, 213, 255), stop:1 rgba(255, 255, 255, 255));
-border-radius:20px;
-color:rgb(0, 147, 147);
-border:1px solid rgb(0,147,147);
+QWidget#mainWidget{
+    background-color:rgb(250, 225, 255);
+    border-radius:10px;
 }
-
-QPushButton:hover#recordButton{
-background-color:rgb(255, 255, 255);
-color:rgb(0,147,147);
-border:2px solid rgb(0,147,147);
+QPushButton#resultsButton,#newButton,#filesButton,#historyButton,#resetButton,#helpButton{
+    border:none;
+    text-align:right;
+    height:40;
+    width:40;
+    border-radius:10px;
 }
-
-QPushButton:focus#recordButton{
-color:white;
-background-color:rgb(0,147,147);
+QPushButton:checked#resultsButton,QPushButton:checked#newButton,QPushButton:checked#filesButton,QPushButton:checked#historyButton,QPushButton:checked#resetButton,QPushButton:checked#helpButton{
+    background-color:rgb(170, 170, 255);
 }
-
-QPushButton#runButton{
-background-color:qconicalgradient(cx:0.919, cy:1, angle:0, stop:0 rgba(103, 222, 255, 255), stop:1 rgba(165, 255, 212, 255));
-color:rgb(170, 0, 255);
-border-radius:20px;
-border:1px solid rgb(0,147,147);
+QPushButton#menu{
+    border:none;
+    height:40;
+    width:40;
+    border-radius:10px;
 }
-
-QPushButton:hover#runButton{
-background-color:rgb(255, 255, 255);
-color:rgb(255, 170, 0);
-border:2px solid rgb(255, 170, 0);
+QLabel#fileslabel{
+    background-color:rgb(0,170,250);
+    color:yellow;
 }
-
+QPushButton#resultsButton_2,QPushButton#newButton_2,QPushButton#filesButton_2,QPushButton#historyButton_2,QPushButton#resetButton_2,QPushButton#helpButton_2{
+    text-align:left;
+    color:rgb(170, 0, 255);
+    height:40px;
+    border:none;
+    border-top-left-radius:10px;
+    border-bottom-left-radius:10px;
+}
+QPushButton:checked#resultsButton_2,QPushButton:checked#newButton_2,QPushButton:checked#filesButton_2,QPushButton:checked#historyButton_2,QPushButton:checked#resetButton_2,QPushButton:checked#helpButton_2{
+    background-color:rgb(170, 0, 255);
+    color:white;
+    font-weight:bold;
+}
+QLabel#mainlabel{
+    color:rgb(170, 0, 255);
+}
+QWidget#toolsWidget{
+    background-color:rgb(224, 219, 255);
+    border-radius:10px;
+}
+QPushButton#uploadButton,#recordButton,#runButton,#stopButton,QPushButton#clearButton,QPushButton#clearButton_2,QPushButton#saveButton{
+    border:none;
+    height:40px;
+    width:60px;
+    border-radius:10px;
+    color:rgb(170, 0, 255);
+}
+QPushButton:focus#uploadButton,QPushButton:focus#clearButton,QPushButton:focus#clearButton_2,QPushButton:focus#recordButton,QPushButton:focus#saveButton{
+    border:1px solid rgb(170, 0, 255);
+    background-color:white;
+    color:rgb(170,0,255);
+    font-weight:bold;
+}
+QPushButton:hover#uploadButton,QPushButton:hover#clearButton,QPushButton:hover#clearButton_2,QPushButton:hover#saveButton,QPushButton:hover#recordButton{
+    background-color:rgb(249, 237, 255);
+    color:rgb(170,0,255);
+    border:none;
+    font-weight:bold;
+}
+QPushButton:hover#runButton,QPushButton:hover#stopButton{
+    border:1px solid rgb(0,170,250);
+    color:rgb(0,170,250);
+    font-weight:bold;
+}
 QPushButton:focus#runButton{
-color:white;
-background-color:rgb(255,170,0);
+	background-color: rgb(255, 255, 255);
+	color: rgb(255, 196, 76);
+    border:1px solid rgb(255,196,76);
+    font-weight:bold;
 }
-
-QPushButton#stopButton{
-background-color:qconicalgradient(cx:0.919, cy:1, angle:0, stop:0 rgba(103, 222, 255, 255), stop:1 rgba(165, 255, 212, 255));
-color:rgb(255, 85, 0);
-border-radius:20px;
-border:1px solid rgb(0,147,147);
-}
-
-QPushButton:hover#stopButton{
-background-color:rgb(255, 255, 255);
-color:rgb(255, 85, 0);
-border:2px solid rgb(255, 85, 0);
-}
-
 QPushButton:focus#stopButton{
-color:white;
-background-color:rgb(255,85,0);
+    background-color:white;
+    color:red;
+    border:1px solid red;
+    font-weight:bold;
 }
-
-QPushButton#saveButton{
-background-color:qlineargradient(spread:pad, x1:0.989474, y1:0.966, x2:1, y2:1, stop:0 rgba(0, 255, 127, 255), stop:1 rgba(255, 255, 255, 255));
-color:rgb(0, 85, 0);
-border-radius:20px;
-border:1px solid rgb(0,85,0);
-}
-
-QPushButton:hover#saveButton{
-background-color:rgb(255, 255, 255);
-color:rgb(0, 85, 0);
-border:2px solid rgb(0, 85, 0);
-}
-
-QPushButton:focus#saveButton{
-color:white;
-background-color:rgb(0,85,0);
-}
-
-QPushButton#clearButton{
-background-color:rgb(35, 204, 255);
-color:rgb(0, 0, 127);
-border-radius:20px;
-border:1px solid rgb(0, 0, 127); 
-}
-
-QPushButton#clearfilesButton{
-background-color:rgb(35, 204, 255);
-color:rgb(0, 0, 127);
-border-radius:20px;
-border:1px solid rgb(0, 0, 127); 
-}
-
-QPushButton:hover#clearButton{
-background-color:rgb(255, 255, 255);
-color:rgb(0, 85, 127);
-border:2px solid rgb(35, 204, 255);
-}
-
-QPushButton:hover#clearfilesButton{
-background-color:rgb(255, 255, 255);
-color:rgb(0, 85, 127);
-border:2px solid rgb(35, 204, 255);
-}
-
-QPushButton:focus#clearButton{
-background-color:rgb(0, 85, 127);
-color:white;
-}
-
-QPushButton:focus#clearfilesButton{
-background-color:rgb(0, 85, 127);
-color:white;
-}
-
-QWidget#tab1{
-border:1px solid black;
-}
-
-QWidget#tab2{
-border:1px solid black;
-}
-
-QWidget#tab3{
-border:1px solid black;
-}
-
 QTableWidget{
-border:1px solid white;
-} 
-
-QTabWidget#resultTab{ 
-background-color:rgb(225, 225, 225);
-color:white;
+    background-color:rgb(240,251,255);
 }
-QPushButton:!enabled#runButton,QPushButton:!enabled#saveButton,QPushButton:!enabled#stopButton,QPushButton:!enabled#clearButton,QPushButton:!enabled#clearfilesButton,QPushButton:!enabled#recordButton{
-    background-color: rgb(192, 192, 192);
-    cursor: forbidden;
+QTabWidget{
+    background-color:rgb(225, 225, 225);
 }
