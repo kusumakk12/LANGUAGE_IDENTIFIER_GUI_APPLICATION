@@ -1,0 +1,19 @@
+<RCC>
+  <qresource>
+    <file>Icons/clear.png</file>
+    <file>Icons/files.png</file>
+    <file>Icons/fugue-icons-3.5.6.zip</file>
+    <file>Icons/help.png</file>
+    <file>Icons/history.png</file>
+    <file>Icons/menu.png</file>
+    <file>Icons/new.png</file>
+    <file>Icons/record.png</file>
+    <file>Icons/reset.png</file>
+    <file>Icons/results.png</file>
+    <file>Icons/run.png</file>
+    <file>Icons/save.png</file>
+    <file>Icons/savedd.png</file>
+    <file>Icons/stop.png</file>
+    <file>Icons/upload.png</file>
+  </qresource>
+</RCC>
