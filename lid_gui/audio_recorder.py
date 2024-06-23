@@ -1,176 +1,189 @@
-import sys
 import pyaudio
+import wave
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QFileDialog, QLabel,QMessageBox
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QCursor,QIcon
+from PyQt5.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QFileDialog
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer, Qt
 import pyqtgraph as pg
-import scipy.io.wavfile as wav
 from scipy.signal import butter, lfilter
+import os
+
 class AudioRecorderDialog(QDialog):
     file_saved = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.plot_widget=pg.PlotWidget()
+        self.waveform_curve = self.plot_widget.plot(pen='b')
+        #self.plot_widget.addItem(self.waveform_curve)
         self.setWindowTitle("Audio Recorder")
-        self.setGeometry(100, 300, 500, 300)
+        self.setGeometry(200, 250, 500, 300)
         self.setStyleSheet("""
-            QDialog {
-                background-color: #f0f0f0;
+            QDialog { background-color: white; }
+            QPushButton { 
+                background-color: #4CAF50; 
+                color: white; 
+                border: none; 
+                padding: 10px; 
+                margin: 5px; 
+                font-size: 16px; 
             }
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-            }
+            QPushButton:hover {
+                background-color: #45a049;
+                cursor: pointer;}
+            QLabel { color: black; font-size: 18px; }
             QPushButton:disabled {
                 background-color: #cccccc;
                 color: #666666;
             }
-            QLabel {
-                font-size: 16px;
-                font-weight: bold;
-                color: #333333;
-            }
         """)
-
-        # Initialize PyAudio
         self.audio = pyaudio.PyAudio()
+        self.stream = None
+        self.frames = []
+        self.is_recording = False
+        self.is_paused = False
 
-        # Create widgets
-        self.start_button = QPushButton("Start Recording")
-        self.stop_button = QPushButton("Stop Recording")
+        micon_path = "C:/Users/Hp/AppData/Local/Programs/Python/Python311/Lib/site-packages/qt5_applications/Qt/projects/LID_GUI/gui/lid_gui/mic_icon.png"
+        self.start_button = self.create_button(micon_path, self.start_recording)
+        picon_path = "C:/Users/Hp/AppData/Local/Programs/Python/Python311/Lib/site-packages/qt5_applications/Qt/projects/LID_GUI/gui/lid_gui/pause_icon.png"
+        self.pause_button = self.create_button(picon_path, self.toggle_pause)
+        sicon_path = "C:/Users/Hp/AppData/Local/Programs/Python/Python311/Lib/site-packages/qt5_applications/Qt/projects/LID_GUI/gui/lid_gui/stop_icon.png"
+        self.stop_button = self.create_button(sicon_path, self.stop_recording)
+
+        self.pause_button.setEnabled(False)
         self.stop_button.setEnabled(False)
-        self.message_label = QLabel("Ready")
 
-        # Create plot widget
+        self.time_label = QLabel("00:00:00")
+        self.time_label.setAlignment(Qt.AlignCenter)
+
         self.plot_widget = pg.PlotWidget()
-        self.pitch_curve = self.plot_widget.plot(pen='r')
-        self.plot_widget.setVisible(False)
+        self.plot_widget.setBackground('w')
+        self.waveform_curve = self.plot_widget.plot(pen='b')
+        self.plot_widget.setLabel('left', 'Amplitude')
+        self.plot_widget.setLabel('bottom', 'Time')
+        self.plot_widget.setYRange(-32768, 32767)
 
-        # Create layouts
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.start_button)
+        button_layout.addWidget(self.pause_button)
         button_layout.addWidget(self.stop_button)
-        
 
         main_layout = QVBoxLayout()
-        main_layout.addWidget(self.message_label)
+        main_layout.addWidget(self.time_label)
         main_layout.addWidget(self.plot_widget)
         main_layout.addLayout(button_layout)
-
         self.setLayout(main_layout)
 
-        # Connect button signals
-        self.start_button.clicked.connect(self.start_recording)
-        self.stop_button.clicked.connect(self.stop_recording)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_timer)
+        self.recording_time = 0
+
+        self.audio_data = np.array([], dtype=np.int16)
+        self.window_size = 44100  
+    def create_button(self, icon_path, callback):
+        button = QPushButton()
+        button.setFixedSize(100, 50)
+        button.clicked.connect(callback)
+        button.setCursor(QCursor(Qt.PointingHandCursor))
+        button.setProperty("class", "recording-button")
+        icon = QIcon(icon_path)
+        button.setIcon(icon)
+        button.setIconSize(button.size() * 0.8)  
+        return button
+
+    def update_button_states(self, recording=False):
+        self.start_button.setEnabled(not recording)
+        self.pause_button.setEnabled(recording)
+        self.stop_button.setEnabled(recording)
         
-
-        self.stream = None
-        self.pitch_thread = None
-        self.recorded_data = []
-
-    # The rest of the code remains the same as in the original AudioRecorder class
-
-
+        for button in [self.start_button, self.pause_button, self.stop_button]:
+            if button.isEnabled():
+                button.setCursor(QCursor(Qt.PointingHandCursor))
 
     def start_recording(self):
-        # Open audio stream
-        self.stream = self.audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
-        self.recorded_data = []
-
-        # Update button and widget states
+        self.stream = self.audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, 
+                                      frames_per_buffer=1024, stream_callback=self.audio_callback)
+        self.frames = []
+        self.audio_data = np.array([], dtype=np.int16)
+        self.is_recording = True
+        self.is_paused = False
         self.start_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
         self.stop_button.setEnabled(True)
-        self.message_label.setText("Recording...")
-        self.plot_widget.setVisible(True)
+        self.update_button_states(recording=True)
+        self.stream.start_stream()
+        self.timer.start(20)  
 
-        # Start pitch visualization thread
-        self.pitch_thread = PitchVisualizationThread(self.stream, self.pitch_curve, self.recorded_data)
-        self.pitch_thread.data_ready.connect(self.update_plot)
-        self.pitch_thread.start()
+    def audio_callback(self, in_data, frame_count, time_info, status):
+        if not self.is_paused:
+            self.frames.append(in_data)
+            audio_data = np.frombuffer(in_data, dtype=np.int16)
+            self.audio_data = np.concatenate((self.audio_data, audio_data))
+            '''if len(self.audio_data) > self.window_size:
+                self.audio_data = self.audio_data[-self.window_size:]'''
+            self.update_plot()
+        return (in_data, pyaudio.paContinue)
 
-        print("Recording started...")
-
-    def update_plot(self, data):
-        self.pitch_curve.setData(data)
+    def update_plot(self):
+        self.waveform_curve.setData(self.audio_data)
+        self.plot_widget.setXRange(0, len(self.audio_data))
 
     def stop_recording(self):
-        # Stop pitch visualization thread
-        self.pitch_thread.stop()
-        self.pitch_thread.wait()
+        if self.is_recording:
+            self.is_recording = False
+            self.is_paused = False
+            self.stream.stop_stream()
+            self.stream.close()
+            self.timer.stop()
+            self.update_button_states(recording=False)
 
-        # Stop audio stream
-        self.stream.stop_stream()
-        self.stream.close()
-        self.save_audio()
+            reply = QMessageBox.question(self, 'Save Recording', 'Do you want to save the recording?',
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                saved=self.save_audio()
+            self.close()  
+            #self.reset_ui()
 
-        # Update button and widget states
+    def reset_ui(self):
         self.start_button.setEnabled(True)
+        self.pause_button.setEnabled(False)
         self.stop_button.setEnabled(False)
-        self.message_label.setText("Recording stopped.")
-        self.plot_widget.setVisible(False)
-
-        print("Recording stopped.")
+        self.recording_time = 0
+        self.time_label.setText("00:00:00")
+        self.audio_data = np.array([], dtype=np.int16)
+        self.waveform_curve.setData(self.audio_data)
+        self.update_button_states(recording=False)
 
     def save_audio(self):
-         reply = QMessageBox.question(self, 'Save File', 'Are you sure you want to save the file?',
-                                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-         if reply == QMessageBox.Yes:
-             self.accept()
-             # Open file dialog to choose save location
-             file_name, _ = QFileDialog.getSaveFileName(self, "Save Audio", "recorded_audio.wav", "WAV Files (*.wav)")
-             if file_name:
-                # Save recorded audio to the chosen file
-                recorded_data = np.array(self.recorded_data, dtype=np.int16)
-                wav.write(file_name, 44100, recorded_data)
-                # Reset recorded data and disable save button
-                self.recorded_data = []
-                print(f"Audio saved to {file_name}")
-                self.message_label.setText("Audio saved.")
-                self.file_saved.emit(file_name)
-         else:
-               self.accept()
-               print("not saved")
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Audio", "recorded_audio.wav", "MP3 Files (*.mp3)")
+        if file_name:
+            wf = wave.open(file_name, 'wb')
+            wf.setnchannels(1)
+            wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+            wf.setframerate(44100)
+            wf.writeframes(b''.join(self.frames))
+            wf.close()
+            self.file_saved.emit(file_name)
+            
+    def toggle_pause(self):
+        if self.is_recording:
+            if not self.is_paused:
+                self.is_paused = True
+                self.timer.stop()
+            else:
+                self.is_paused = False
+                self.timer.start(50)
 
-class PitchVisualizationThread(QThread):
-    data_ready = pyqtSignal(np.ndarray)
+    def update_timer(self):
+        self.recording_time += 1
+        hours, remainder = divmod(self.recording_time, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        self.time_label.setText(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
 
-    def __init__(self, audio_stream, pitch_curve, recorded_data):
-        super().__init__()
-        self.audio_stream = audio_stream
-        self.pitch_curve = pitch_curve
-        self.recorded_data = recorded_data
-        self.running = True
-
-    def run(self):
-        while self.running:
-            data = self.audio_stream.read(1024)
-            data = np.frombuffer(data, dtype=np.int16)
-            self.recorded_data.extend(data)
-            pitch_data = self.extract_pitch(data)
-            self.data_ready.emit(pitch_data)
-
-    def extract_pitch(self, data):
-        # Apply a low-pass filter to remove high-frequency noise
-        nyquist_freq = 44100 / 2
-        cutoff_freq = 1000  # Set the cutoff frequency as desired
-        order = 4
-        norm_cutoff = cutoff_freq / nyquist_freq
-        b, a = butter(order, norm_cutoff, btype='low', analog=False)
-        filtered_data = lfilter(b, a, data)
-
-        # Calculate the pitch data
-        pitch_data = np.abs(np.fft.rfft(filtered_data))[:len(filtered_data) // 2]
-
-        return pitch_data
-
-    def stop(self):
-        self.running = False
 def main():
-    app = QApplication(sys.argv)
+    app = QApplication([])
     recorder_dialog = AudioRecorderDialog()
     recorder_dialog.show()
-    sys.exit(app.exec_())
+    app.exec_()
 
 
