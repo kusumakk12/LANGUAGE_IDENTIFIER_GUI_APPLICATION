@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtCore import QFile, QTextStream
-import resources_rc
+import resource_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
