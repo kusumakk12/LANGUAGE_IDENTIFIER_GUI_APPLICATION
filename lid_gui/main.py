@@ -1,4 +1,4 @@
-from layout1 import Ui_MainWindow
+from layout import Ui_MainWindow
 import audio_recorder
 import csv,os,sys,xlrd,openpyxl
 from PyQt5 import QtCore, QtGui, QtWidgets
