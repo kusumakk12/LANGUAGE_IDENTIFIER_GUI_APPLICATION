@@ -1,7 +1,8 @@
-from final import Ui_MainWindow
+from layout1 import Ui_MainWindow
 import audio_recorder
 import csv,os,sys,xlrd,openpyxl
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QPushButton,
     QMenu, QFileDialog, QAction, QTextEdit,QDialog,QMessageBox , QSizePolicy,QComboBox,QWidget, QHBoxLayout, QLabel,QVBoxLayout
@@ -14,14 +15,15 @@ from PyQt5.QtCore import pyqtSignal as Signal
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
 class MainWindow(QMainWindow, Ui_MainWindow):
     capacity=3
+    notification_signal = Signal(str)
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.add_plus_symbol()
-        #self.uploadButton.clicked.connect(self.upload_button_clicked)
+        self.resetButton.clicked.connect(self.reset_window)
+        self.uploadButton.clicked.connect(self.showUploadDialog)
         self.recordButton.clicked.connect(self.show_audio_recording_dialog)
         self.runButton.clicked.connect(self.run_button_clicked)
         self.stopButton.clicked.connect(self.stop_button_clicked)
@@ -38,6 +40,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stopButton.setEnabled(False)
         self.clearButton.setEnabled(False)
         self.clearButton_2.setEnabled(False)
+        self.notification_signal.connect(self.show_notification)
+    
 
     def newWindow(self):
         window = MainWindow()
@@ -45,7 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         window.show()
         window.raise_()        
     def show_audio_recording_dialog(self):
-        self.show_notification("recorder on")
+        self.notification_signal.emit("Recorder on")
         dialog = audio_recorder.AudioRecorderDialog()
         dialog.raise_()
         dialog.file_saved.connect(self.on_file_saved)
@@ -54,6 +58,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_file_to_table([filename])
     global stop_insertion
     global timers
+    global timer
     timers=[]
     def populate_table(self):
         self.resultsTable.setRowCount(0)
@@ -73,10 +78,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.clearButton.setEnabled(True)
                     self.runButton.setEnabled(True)
                     self.stopButton.setEnabled(False)
-                    self.show_notification("Files processed")
+                    self.notification_signal.emit("Files processed")
                     self.statusbar.showMessage("Files processed")
                 else:
-                     self.show_notification("Processing has been stopped")
+                     self.notification_signal.emit("Processing stopped")
                      self.statusbar.showMessage("processing has been stopped externally")
                 return  
             if i <= len(data) and  stop_insertion==False:
@@ -110,6 +115,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def run_button_clicked(self):
         global stop_insertion
+        global timer
         stop_insertion=False
         self.saveButton.setEnabled(False)
         self.recordButton.setEnabled(False)
@@ -124,13 +130,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
 
     def stop_button_clicked(self):
+        global timer
         self.runButton.setEnabled(True)
         self.stopButton.setEnabled(False)
         self.recordButton.setEnabled(True)
         global stop_insertion
         stop_insertion=True
-        for timer in timers:
-            timer.cancel()
+        timer.cancel()
         timers.clear()
         if self.resultsTable.rowCount()!=0:
             self.saveButton.setEnabled(True)
@@ -172,7 +178,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
              fileName, _ = QFileDialog.getSaveFileName(None, "Save Results", "", "Excel Files (*.xlsx);;All Files (*)", options=options)
              if fileName:
                 if self.save_to_csv(fileName, self.resultsTable_2):
-                    self.show_notification("Data saved successfully")
+                    self.notification_signal.emit("Data saved successfully")
                     self.statusbar.showMessage("File saved successfully", 2000)
                 else:
                     QMessageBox.critical(None, "Failed to save file", str(e))
@@ -180,9 +186,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
              QMessageBox.critical(None, "Failed to save file", 'no data to save')
              self.statusbar.showMessage("no data to save")
+
     def clearfiles_clicked(self):  
         self.filestable.setRowCount(0)
-        self.show_notification("Selected files cleared")
+        self.notification_signal.emit("selected Files cleared")
         self.add_plus_symbol()  
 
     def add_plus_symbol(self):
@@ -332,8 +339,33 @@ selection-background-color: rgb(170, 255, 255);
     def show_notification(self,message):
         notification = ToastNotification(message,self)
         notification.show()
-
-
+    def showUploadDialog(self):
+        dialog = UploadDialog(self)
+        dialog.exec_()
+    def reset_window(self):
+        self.filestable.setRowCount(0)
+        self.add_plus_symbol()
+        self.resultsTable.setRowCount(0)
+        self.resultsTable_2.setRowCount(0)
+        self.saveButton.setEnabled(False)
+        self.clearButton.setEnabled(False)
+        self.runButton.setEnabled(False)
+        self.stopButton.setEnabled(False)
+        self.clearButton_2.setEnabled(False)
+        self.spinner.setEnabled(True)
+        self.newButton.setChecked(False)
+        self.resultsButton.setChecked(False)
+        self.filesButton.setChecked(False)
+        self.historyButton.setChecked(False)
+        self.resetButton.setChecked(False)
+        self.helpButton.setChecked(False)
+        self.newButton_2.setChecked(False)
+        self.resultsButton_2.setChecked(False)
+        self.filesButton_2.setChecked(False)
+        self.historyButton_2.setChecked(False)
+        self.resetButton_2.setChecked(False)
+        self.helpButton_2.setChecked(False)
+        
 class ToastNotification(QWidget):
     def __init__(self, message, parent=None):
         super().__init__(parent)
@@ -363,7 +395,71 @@ class ToastNotification(QWidget):
     def show(self):
         super().show()
 
+class UploadDialog(QDialog):
+    def __init__(self,MainWindow):
+        self.main_window = MainWindow
+        super().__init__()
+        self.initUI()
       
+    def initUI(self):
+        self.setWindowTitle("drag and drop")
+        self.setGeometry(100, 100, 400, 300)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        self.dropLabel = QLabel("Drag and Drop to Upload File\nOR")
+        layout.addWidget(self.dropLabel)
+        self.browseButton = QPushButton("Browse File")
+        self.browseButton.clicked.connect(self.browseFiles)
+        layout.addWidget(self.browseButton)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        files = [os.path.basename(u.toLocalFile())  for u in event.mimeData().urls()]
+        self.handleFiles(files)
+
+    def browseFiles(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "Select Files", "", "Audio Files (*.mp3 *.wav)", options=options)
+        if not files:
+            folder = QFileDialog.getExistingDirectory(self, "Select Folder", "", options=options)
+            if folder:
+                self.handleFolder(folder)
+        else:
+            self.handleFiles(files)
+
+    def handleFiles(self, files):
+        for file in files:
+            if file.endswith(('.mp3', '.wav')):
+                self.main_window.add_file_to_table([file])
+            elif file.endswith('/'):  # Check if it's a directory
+                self.handleFolder(file)
+            else:
+                QMessageBox.warning(self, "Invalid File", "Please choose a valid audio file (MP3, WAV, etc.).")
+
+
+    def handleFolder(self, folder_name):
+        if folder_name:
+            file_paths = []
+            non_mp3_files = []
+            for f in os.listdir(folder_name):
+                file_path = os.path.join(folder_name, f)
+                if os.path.isfile(file_path) and (f.lower().endswith('.mp3') or f.lower().endswith('.wav')):
+                    file_paths.append(file_path)
+                elif os.path.isfile(file_path):
+                    non_mp3_files.append(f)
+            if non_mp3_files:
+                not_saved_files=f"Selected folder '{os.path.basename(folder_name)}' has non-MP3 files which will not be processed: {', '.join(non_mp3_files)}"
+                QMessageBox.warning(None, "Non Mp3 files", not_saved_files)
+                self.statusbar.showMessage(not_saved_files)
+            self.main_window.add_file_to_table(file_paths)
+
         
 def main():
     app = QApplication(sys.argv)
