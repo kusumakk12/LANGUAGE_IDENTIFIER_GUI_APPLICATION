@@ -7,10 +7,120 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1027, 784)
+        MainWindow.setStyleSheet("""
+QMainWindow{
+    background-color:rgb(24, 24, 27);
+}
+QWidget#centralwidget,QStackedWidget{
+    background-color:rgb(24, 24, 27);
+}
+QWidget#side_bar,#sidebar_2{
+    background-color:rgb(38, 38, 38);
+    border-top-right-radius:10px;
+    border-bottom-right-radius:10px;
+    border:1px solid rgb(14, 165, 233);
+    width:150px;
+}
+QWidget#mainWidget{
+    background-color:rgb(38, 38, 38);
+    border-bottom-left-radius:10px;
+    border-bottom-right-radius:10px;
+}
+QPushButton#resultsButton,#newButton,#filesButton,#historyButton,#resetButton,#helpButton{
+    border:none;
+    text-align:right;
+    height:40;
+    width:40;
+    border-radius:10px;
+}
+QPushButton:checked#resultsButton,QPushButton:checked#newButton,QPushButton:checked#filesButton,QPushButton:checked#historyButton,QPushButton:checked#resetButton,QPushButton:checked#helpButton{
+    background-color:white;
+}
+QPushButton#menu{
+    border:none;
+    height:40;
+    width:40;
+    border-radius:10px;
+}
+QLabel#fileslabel{
+    color:yellow;
+}
+QPushButton#resultsButton_2,QPushButton#newButton_2,QPushButton#filesButton_2,QPushButton#historyButton_2,QPushButton#resetButton_2,QPushButton#helpButton_2{
+    text-align:left;
+    color:rgb(14, 165, 233);
+    height:40px;
+    border:none;
+    border-top-left-radius:10px;
+    border-bottom-left-radius:10px;
+}
+QPushButton:checked#resultsButton_2,QPushButton:checked#newButton_2,QPushButton:checked#filesButton_2,QPushButton:checked#historyButton_2,QPushButton:checked#resetButton_2,QPushButton:checked#helpButton_2{
+    background-color:rgb(63, 63, 70);
+    color:white;
+    font-weight:bold;
+}
+QLabel#mainlabel{
+    color:rgb(132, 204, 22);
+    font-weight:bold;
+}
+QWidget#toolsWidget{
+    background-color:rgb(41, 37, 36);
+    border-top-left-radius:10px;
+    border-bottom-left-radius:10px;
+    border:1px solid black;
+}
+QPushButton#uploadButton,#recordButton,#runButton,#stopButton,QPushButton#clearButton,QPushButton#clearButton_2,QPushButton#saveButton{
+    border:none;
+    height:40px;
+    width:60px;
+    border-radius:10px;
+    color:rgb(219, 39, 119);
+}
+QPushButton:hover#uploadButton,QPushButton:hover#clearButton,QPushButton:hover#clearButton_2,QPushButton:hover#recordButton,QPushButton:hover#saveButton{
+    background-color:black;
+    color:rgb(231, 229, 228);
+    font-weight:bold;
+}
+QPushButton:focus#uploadButton,QPushButton:focus#clearButton,QPushButton:focus#clearButton_2,QPushButton:focus#saveButton,QPushButton:focus#recordButton{
+    color:rgb(219, 39, 119);
+    border:1px solid rgb(219, 39, 119);
+    font-weight:bold;
+}
+QPushButton:focus#runButton{
+    border:1px solid rgb(0,170,250);
+    color:rgb(0,170,250);
+    font-weight:bold;
+}
+QPushButton:focus#stopButton{
+    color:red;
+    border:1px solid red;
+    font-weight;
+}
+QPushButton:hover#runButton{
+	background-color:black;
+	color:rgb(0,170,250);
+        font-weight:70px;
+}
+QPushButton:hover#stopButton{
+    background-color:black;
+    color:red;
+    font-weight:70px;
+}
+QTableWidget{
+    border: 1px solid yellow;
+    border-collapse: collapse;
+    border-radius:10px;
+    width: 100%;
+    background-color:rgb(63, 63, 70);
+    color:white;
+}
+QTabWidget{
+    background-color:rgb(225, 225, 225);
+}
+""")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout_2.setContentsMargins(0, 10, 0, 10)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 10)
         self.gridLayout_2.setSpacing(10)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.toolsWidget = QtWidgets.QWidget(self.centralwidget)
@@ -63,6 +173,7 @@ class Ui_MainWindow(object):
         self.runButton.setFont(font)
         self.runButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.runButton.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.runButton.clicked.connect(self.switch_page2)
         icon_3 = QtGui.QIcon()
         icon_3.addPixmap(QtGui.QPixmap(":/Icons/run.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.runButton.setIcon(icon_3)
@@ -102,7 +213,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setStretch(8, 8)
         self.gridLayout_2.addWidget(self.toolsWidget, 1, 2, 1, 1)
         self.side_bar = QtWidgets.QWidget(self.centralwidget)
-        self.side_bar.setMinimumSize(100,0)
+        self.side_bar.setMinimumSize(50,0)
         self.side_bar.setObjectName("side_bar")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.side_bar)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -458,9 +569,9 @@ class Ui_MainWindow(object):
         self.menu.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.menu.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.menu.setText("")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("C:\\Users\\pyqt5\\LID\\Icons/menu.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.menu.setIcon(icon12)
+        icon_13= QtGui.QIcon()
+        icon_13.addPixmap(QtGui.QPixmap(":/Icons/menu.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.menu.setIcon(icon_13)
         self.menu.setIconSize(QtCore.QSize(30, 40))
         self.menu.setCheckable(True)
         self.menu.setAutoExclusive(True)
@@ -564,11 +675,7 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    file = QFile("final.qss")
-    file.open(QFile.ReadOnly | QFile.Text)
-    stream = QTextStream(file)
-    stylesheet = stream.readAll()
-    file.close()
-    app.setStyleSheet(stylesheet)
+    #app.setStyleSheet(open('/home/projectstudent/Desktop/gui/layout.qss').read())
     MainWindow.show()
     sys.exit(app.exec_())
+
