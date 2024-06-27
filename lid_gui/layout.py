@@ -1,122 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QHeaderView
 from PyQt5.QtCore import QFile, QTextStream
-import resource_rc
+import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1027, 784)
-        MainWindow.setStyleSheet("""
-QMainWindow{
-    background-color:rgb(24, 24, 27);
-}
-QWidget#centralwidget,QStackedWidget{
-    background-color:rgb(24, 24, 27);
-}
-QWidget#side_bar,#sidebar_2{
-    background-color:rgb(38, 38, 38);
-    border-top-right-radius:10px;
-    border-bottom-right-radius:10px;
-    border:1px solid rgb(14, 165, 233);
-    width:150px;
-}
-QWidget#mainWidget{
-    background-color:rgb(38, 38, 38);
-    border-bottom-left-radius:10px;
-    border-bottom-right-radius:10px;
-}
-QPushButton#resultsButton,#newButton,#filesButton,#historyButton,#resetButton,#helpButton{
-    border:none;
-    text-align:right;
-    height:40;
-    width:40;
-    border-radius:10px;
-}
-QPushButton:checked#resultsButton,QPushButton:checked#newButton,QPushButton:checked#filesButton,QPushButton:checked#historyButton,QPushButton:checked#resetButton,QPushButton:checked#helpButton{
-    background-color:white;
-}
-QPushButton#menu{
-    border:none;
-    height:40;
-    width:40;
-    border-radius:10px;
-}
-QLabel#fileslabel{
-    color:yellow;
-}
-QPushButton#resultsButton_2,QPushButton#newButton_2,QPushButton#filesButton_2,QPushButton#historyButton_2,QPushButton#resetButton_2,QPushButton#helpButton_2{
-    text-align:left;
-    color:rgb(14, 165, 233);
-    height:40px;
-    border:none;
-    border-top-left-radius:10px;
-    border-bottom-left-radius:10px;
-}
-QPushButton:checked#resultsButton_2,QPushButton:checked#newButton_2,QPushButton:checked#filesButton_2,QPushButton:checked#historyButton_2,QPushButton:checked#resetButton_2,QPushButton:checked#helpButton_2{
-    background-color:rgb(63, 63, 70);
-    color:white;
-    font-weight:bold;
-}
-QLabel#mainlabel{
-    color:rgb(132, 204, 22);
-    font-weight:bold;
-}
-QWidget#toolsWidget{
-    background-color:rgb(41, 37, 36);
-    border-top-left-radius:10px;
-    border-bottom-left-radius:10px;
-    border:1px solid black;
-}
-QPushButton#uploadButton,#recordButton,#runButton,#stopButton,QPushButton#clearButton,QPushButton#clearButton_2,QPushButton#saveButton{
-    border:none;
-    height:40px;
-    width:60px;
-    border-radius:10px;
-    color:rgb(219, 39, 119);
-}
-QPushButton:hover#uploadButton,QPushButton:hover#clearButton,QPushButton:hover#clearButton_2,QPushButton:hover#recordButton,QPushButton:hover#saveButton{
-    background-color:black;
-    color:rgb(231, 229, 228);
-    font-weight:bold;
-}
-QPushButton:focus#uploadButton,QPushButton:focus#clearButton,QPushButton:focus#clearButton_2,QPushButton:focus#saveButton,QPushButton:focus#recordButton{
-    color:rgb(219, 39, 119);
-    border:1px solid rgb(219, 39, 119);
-    font-weight:bold;
-}
-QPushButton:focus#runButton{
-    border:1px solid rgb(0,170,250);
-    color:rgb(0,170,250);
-    font-weight:bold;
-}
-QPushButton:focus#stopButton{
-    color:red;
-    border:1px solid red;
-    font-weight;
-}
-QPushButton:hover#runButton{
-	background-color:black;
-	color:rgb(0,170,250);
-        font-weight:70px;
-}
-QPushButton:hover#stopButton{
-    background-color:black;
-    color:red;
-    font-weight:70px;
-}
-QTableWidget{
-    border: 1px solid yellow;
-    border-collapse: collapse;
-    border-radius:10px;
-    width: 100%;
-    background-color:rgb(63, 63, 70);
-    color:white;
-}
-QTabWidget{
-    background-color:rgb(225, 225, 225);
-}
-""")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
@@ -144,6 +34,7 @@ QTabWidget{
         self.uploadButton.setCheckable(False)
         self.uploadButton.setAutoExclusive(True)
         self.uploadButton.setObjectName("uploadButton")
+        self.uploadButton.clicked.connect(self.switch_page)
         self.horizontalLayout_3.addWidget(self.uploadButton)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
@@ -162,6 +53,7 @@ QTabWidget{
         self.recordButton.setCheckable(False)
         self.recordButton.setAutoExclusive(True)
         self.recordButton.setObjectName("recordButton")
+        self.recordButton.clicked.connect(self.switch_page)
         self.horizontalLayout_3.addWidget(self.recordButton)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem2)
@@ -220,21 +112,20 @@ QTabWidget{
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(20)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.newButton = QtWidgets.QPushButton(self.side_bar)
-        self.newButton.setMinimumSize(QtCore.QSize(0, 0))
-        self.newButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.newButton.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.newButton.setText("")
-        icon_5 = QtGui.QIcon()
-        icon_5.addPixmap(QtGui.QPixmap(":/Icons/new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.newButton.setIcon(icon_5)
-        self.newButton.setIconSize(QtCore.QSize(30, 30))
-        self.newButton.setToolTip("New")
-        self.newButton.setToolTipDuration(3000)
-        self.newButton.setCheckable(True)
-        self.newButton.setAutoExclusive(True)
-        self.newButton.setObjectName("newButton")
-        self.verticalLayout.addWidget(self.newButton)
+        self.filesButton = QtWidgets.QPushButton(self.side_bar)
+        self.filesButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.filesButton.setText("")
+        icon_7 = QtGui.QIcon()
+        icon_7.addPixmap(QtGui.QPixmap(":/Icons/files.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.filesButton.setIcon(icon_7)
+        self.filesButton.setIconSize(QtCore.QSize(30, 30))
+        self.filesButton.setToolTip("Selected Files")
+        self.filesButton.setToolTipDuration(3000)
+        self.filesButton.setCheckable(True)
+        self.filesButton.setAutoExclusive(True)
+        self.filesButton.setObjectName("filesButton")
+        self.filesButton.clicked.connect(self.switch_page)
+        self.verticalLayout.addWidget(self.filesButton)
         self.resultsButton = QtWidgets.QPushButton(self.side_bar)
         font = QtGui.QFont()
         font.setPointSize(14)
@@ -254,20 +145,6 @@ QTabWidget{
         self.resultsButton.setObjectName("resultsButton")
         self.resultsButton.clicked.connect(self.switch_page2)
         self.verticalLayout.addWidget(self.resultsButton)
-        self.filesButton = QtWidgets.QPushButton(self.side_bar)
-        self.filesButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.filesButton.setText("")
-        icon_7 = QtGui.QIcon()
-        icon_7.addPixmap(QtGui.QPixmap(":/Icons/files.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.filesButton.setIcon(icon_7)
-        self.filesButton.setIconSize(QtCore.QSize(30, 30))
-        self.filesButton.setToolTip("Selected Files")
-        self.filesButton.setToolTipDuration(3000)
-        self.filesButton.setCheckable(True)
-        self.filesButton.setAutoExclusive(True)
-        self.filesButton.setObjectName("filesButton")
-        self.filesButton.clicked.connect(self.switch_page)
-        self.verticalLayout.addWidget(self.filesButton)
         self.historyButton = QtWidgets.QPushButton(self.side_bar)
         self.historyButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.historyButton.setText("")
@@ -294,7 +171,23 @@ QTabWidget{
         self.resetButton.setCheckable(True)
         self.resetButton.setAutoExclusive(True)
         self.resetButton.setObjectName("resetButton")
+        self.resetButton.clicked.connect(self.switch_page)
         self.verticalLayout.addWidget(self.resetButton)
+        self.newButton = QtWidgets.QPushButton(self.side_bar)
+        self.newButton.setMinimumSize(QtCore.QSize(0, 0))
+        self.newButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.newButton.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.newButton.setText("")
+        icon_5 = QtGui.QIcon()
+        icon_5.addPixmap(QtGui.QPixmap(":/Icons/new.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.newButton.setIcon(icon_5)
+        self.newButton.setIconSize(QtCore.QSize(30, 30))
+        self.newButton.setToolTip("New Window")
+        self.newButton.setToolTipDuration(3000)
+        self.newButton.setCheckable(True)
+        self.newButton.setAutoExclusive(True)
+        self.newButton.setObjectName("newButton")
+        self.verticalLayout.addWidget(self.newButton)
         self.helpButton = QtWidgets.QPushButton(self.side_bar)
         self.helpButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.helpButton.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -325,38 +218,14 @@ QTabWidget{
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
         self.verticalLayout_4.setSpacing(20)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.newButton_2 = QtWidgets.QPushButton(self.sidebar_2)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI Variable Small")
-        font.setPointSize(14)
-        font.setBold(False)
-        font.setWeight(50)
-        self.newButton_2.setFont(font)
-        self.newButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.newButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.newButton_2.setCheckable(True)
-        self.newButton_2.setAutoExclusive(True)
-        self.newButton_2.setObjectName("newButton_2")
-        self.verticalLayout_4.addWidget(self.newButton_2)
-        self.resultsButton_2 = QtWidgets.QPushButton(self.sidebar_2)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI Variable Small")
-        font.setPointSize(14)
-        font.setWeight(50)
-        self.resultsButton_2.setFont(font)
-        self.resultsButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.resultsButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.resultsButton_2.setCheckable(True)
-        self.resultsButton_2.setAutoExclusive(True)
-        self.resultsButton_2.setObjectName("resultsButton_2")
-        self.resultsButton_2.clicked.connect(self.switch_page2)
-        self.verticalLayout_4.addWidget(self.resultsButton_2)
         self.filesButton_2 = QtWidgets.QPushButton(self.sidebar_2)
         font = QtGui.QFont()
         font.setFamily("Segoe UI Variable Small")
         font.setPointSize(14)
         font.setWeight(50)
         self.filesButton_2.setFont(font)
+        self.filesButton_2.setIcon(icon_7)
+        self.filesButton_2.setIconSize(QtCore.QSize(20,20))
         self.filesButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.filesButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.filesButton_2.setCheckable(True)
@@ -364,12 +233,29 @@ QTabWidget{
         self.filesButton_2.setObjectName("filesButton_2")
         self.filesButton_2.clicked.connect(self.switch_page)
         self.verticalLayout_4.addWidget(self.filesButton_2)
+        self.resultsButton_2 = QtWidgets.QPushButton(self.sidebar_2)
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Variable Small")
+        font.setPointSize(14)
+        font.setWeight(50)
+        self.resultsButton_2.setFont(font)
+        self.resultsButton_2.setIcon(icon_6)
+        self.resultsButton_2.setIconSize(QtCore.QSize(20,20))
+        self.resultsButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.resultsButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.resultsButton_2.setCheckable(True)
+        self.resultsButton_2.setAutoExclusive(True)
+        self.resultsButton_2.setObjectName("resultsButton_2")
+        self.resultsButton_2.clicked.connect(self.switch_page2)
+        self.verticalLayout_4.addWidget(self.resultsButton_2)
         self.historyButton_2 = QtWidgets.QPushButton(self.sidebar_2)
         font = QtGui.QFont()
         font.setFamily("Segoe UI Variable Small")
         font.setPointSize(14)
         font.setWeight(50)
         self.historyButton_2.setFont(font)
+        self.historyButton_2.setIcon(icon_8)
+        self.historyButton_2.setIconSize(QtCore.QSize(20,20))
         self.historyButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.historyButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.historyButton_2.setCheckable(True)
@@ -382,18 +268,37 @@ QTabWidget{
         font.setPointSize(14)
         font.setWeight(50)
         self.resetButton_2.setFont(font)
+        self.resetButton_2.setIcon(icon_9)
+        self.resetButton_2.setIconSize(QtCore.QSize(20,20))
         self.resetButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.resetButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.resetButton_2.setCheckable(True)
         self.resetButton_2.setAutoExclusive(True)
         self.resetButton_2.setObjectName("resetButton_2")
         self.verticalLayout_4.addWidget(self.resetButton_2)
+        self.newButton_2 = QtWidgets.QPushButton(self.sidebar_2)
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Variable Small")
+        font.setPointSize(14)
+        font.setBold(False)
+        font.setWeight(50)
+        self.newButton_2.setFont(font)
+        self.newButton_2.setIcon(icon_5)
+        self.newButton_2.setIconSize(QtCore.QSize(20,20))
+        self.newButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.newButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.newButton_2.setCheckable(True)
+        self.newButton_2.setAutoExclusive(True)
+        self.newButton_2.setObjectName("newButton_2")
+        self.verticalLayout_4.addWidget(self.newButton_2)
         self.helpButton_2 = QtWidgets.QPushButton(self.sidebar_2)
         font = QtGui.QFont()
         font.setFamily("Segoe UI Variable Small")
         font.setPointSize(14)
         font.setWeight(50)
         self.helpButton_2.setFont(font)
+        self.helpButton_2.setIcon(icon_10)
+        self.helpButton_2.setIconSize(QtCore.QSize(20,20))
         self.helpButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.helpButton_2.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.helpButton_2.setCheckable(True)
@@ -432,10 +337,14 @@ QTabWidget{
         font.setWeight(50)
         self.filestable.setFont(font)
         self.filestable.setObjectName("filestable")
-        self.filestable.setColumnCount(1)
+        self.filestable.setColumnCount(3)
         self.filestable.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.filestable.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.filestable.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.filestable.setHorizontalHeaderItem(2, item)
         self.gridLayout_3.addWidget(self.filestable, 1, 0, 1, 1)
         self.clearButton = QtWidgets.QPushButton(self.page)
         font = QtGui.QFont()
@@ -588,6 +497,15 @@ QTabWidget{
         self.mainlabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.mainlabel.setObjectName("mainlabel")
         self.horizontalLayout_4.addWidget(self.mainlabel)
+        spacerItem10= QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem10)
+        self.modeButton = QtWidgets.QPushButton(self.mainWidget)
+        self.modeButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.modeButton.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.modeButton.setText("")
+        self.modeButton.setCheckable(True)
+        self.modeButton.setObjectName("modeButton")
+        self.horizontalLayout_4.addWidget(self.modeButton)
         self.horizontalLayout_4.setStretch(2, 2)
         self.gridLayout_2.addWidget(self.mainWidget, 0, 0, 1, 3)
         self.gridLayout_2.setColumnStretch(2, 8)
@@ -602,6 +520,8 @@ QTabWidget{
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
+        self.filesButton.setChecked(True)
+        self.filesButton_2.setChecked(True)
         self.tabWidget.setCurrentIndex(0)
         self.menu.toggled['bool'].connect(self.side_bar.setHidden) # type: ignore
         self.menu.toggled['bool'].connect(self.sidebar_2.setVisible) # type: ignore
@@ -627,7 +547,7 @@ QTabWidget{
         self.recordButton.setText(_translate("MainWindow", "Record"))
         self.runButton.setText(_translate("MainWindow", "Run"))
         self.stopButton.setText(_translate("MainWindow", "Stop"))
-        self.newButton_2.setText(_translate("MainWindow", "New"))
+        self.newButton_2.setText(_translate("MainWindow", "New Window"))
         self.resultsButton_2.setText(_translate("MainWindow", "Results"))
         self.filesButton_2.setText(_translate("MainWindow", "Files"))
         self.historyButton_2.setText(_translate("MainWindow", "History"))
@@ -639,6 +559,16 @@ QTabWidget{
             item = QtWidgets.QTableWidgetItem()
             self.filestable.setHorizontalHeaderItem(0, item)
         item.setText(_translate("MainWindow", "Files"))
+        item = self.filestable.horizontalHeaderItem(1)
+        if item is None:
+            item = QtWidgets.QTableWidgetItem()
+            self.filestable.setHorizontalHeaderItem(1, item)
+        item.setText(_translate("MainWindow", "Size"))
+        item = self.filestable.horizontalHeaderItem(2)
+        if item is None:
+            item = QtWidgets.QTableWidgetItem()
+            self.filestable.setHorizontalHeaderItem(2, item)
+        item.setText(_translate("MainWindow", "Upload date"))
         self.clearButton.setText(_translate("MainWindow", "Clear"))
         item = self.resultsTable.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Files"))
@@ -661,12 +591,17 @@ QTabWidget{
         self.saveButton.setText(_translate("MainWindow", "Save"))
         self.clearButton_2.setText(_translate("MainWindow", "Clear"))
         self.mainlabel.setText(_translate("MainWindow", "Language Identifier"))
+        
     
     def switch_page(self):
         self.stackedWidget.setCurrentIndex(0)
+        self.filesButton.setChecked(True)
+        self.filesButton_2.setChecked(True)
 
     def switch_page2(self):
         self.stackedWidget.setCurrentIndex(1)
+        self.resultsButton.setChecked(True)
+        self.resultsButton_2.setChecked(True)
 
 
 if __name__ == "__main__":
@@ -675,7 +610,5 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    #app.setStyleSheet(open('/home/projectstudent/Desktop/gui/layout.qss').read())
     MainWindow.show()
     sys.exit(app.exec_())
-
