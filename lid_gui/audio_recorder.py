@@ -1,12 +1,16 @@
 import pyaudio
 import wave
 import numpy as np
-from PyQt5.QtGui import QCursor, QIcon
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QFileDialog
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer, Qt
 import pyqtgraph as pg
 from scipy.signal import butter, lfilter
 import os
+import resources_rc
 
 class AudioRecorderThread(QThread):
     update_plot = pyqtSignal(np.ndarray)
@@ -24,9 +28,7 @@ class AudioRecorderThread(QThread):
                                       frames_per_buffer=1024, stream_callback=self.audio_callback)
         self.stream.start_stream()
         self.is_recording = True
-        while self.is_recording:
-            self.sleep(1)
-        self.stop_recording()
+        self.is_paused = False
 
     def audio_callback(self, in_data, frame_count, time_info, status):
         if not self.is_paused:
@@ -56,39 +58,47 @@ class AudioRecorderDialog(QDialog):
         self.setWindowTitle("Audio Recorder")
         self.setGeometry(200, 250, 500, 300)
         self.setStyleSheet("""
-            QDialog { background-color: white; }
-            QPushButton { 
-                background-color: #4CAF50; 
-                color: white; 
-                border: none; 
-                padding: 10px; 
-                margin: 5px; 
-                font-size: 16px; 
+            QDialog { 
+                background-color:rgb(10,10,10); 
             }
-            QPushButton:hover { background-color: #45a049; }
-            QLabel { color: black; font-size: 18px; }
+            QPushButton { 
+                border: none;
+                border-radius:20px; 
+                padding:2px;
+            }
+            QPushButton:hover { 
+                background-color: rgb(113, 113, 122);
+            }
+            QLabel { 
+                color: rgb(162, 28, 175);
+                font-size:20px;
+            }
             QPushButton:disabled {
-                background-color: #cccccc;
                 color: #666666;
             }
-        """)
+           """)
 
         self.time_label = QLabel("00:00:00")
         self.time_label.setAlignment(Qt.AlignCenter)
 
         self.plot_widget = pg.PlotWidget()
-        self.plot_widget.setBackground('w')
-        self.waveform_curve = self.plot_widget.plot(pen='b')
+        self.plot_widget.setBackground(pg.mkColor((10,10,10)))
+        self.waveform_curve = self.plot_widget.plot(pen=pg.mkPen(color=(126, 34, 206)))
         self.plot_widget.setLabel('left', 'Amplitude')
         self.plot_widget.setLabel('bottom', 'Time (s)')
         self.plot_widget.setYRange(-32768, 32767)
 
-        micon_path = "/home/projectstudent/Desktop/gui/Icons/record.png"
-        self.start_button = self.create_button(micon_path, self.start_recording)
-        picon_path = "/home/projectstudent/Desktop/gui/Icons/pause.png"
-        self.pause_button = self.create_button(picon_path, self.toggle_pause)
-        sicon_path = "/home/projectstudent/Desktop/gui/Icons/stop.png"
-        self.stop_button = self.create_button(sicon_path, self.stop_recording_confirmation)
+        mic_icon = QtGui.QIcon()
+        mic_icon.addPixmap(QtGui.QPixmap(":/Icons/recordd.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.start_button = self.create_button(mic_icon, self.start_recording)
+
+        pause_icon = QtGui.QIcon()
+        pause_icon.addPixmap(QtGui.QPixmap(":/Icons/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pause_button = self.create_button(pause_icon, self.toggle_pause)
+
+        stop_icon = QtGui.QIcon()
+        stop_icon.addPixmap(QtGui.QPixmap(":/Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.stop_button = self.create_button(stop_icon, self.stop_recording_confirmation)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.start_button)
@@ -107,15 +117,14 @@ class AudioRecorderDialog(QDialog):
 
         self.update_button_states(recording=False)
 
-    def create_button(self, icon_path, callback):
+    def create_button(self, icon, callback):
         button = QPushButton()
-        button.setFixedSize(100, 50)
+        button.setFixedSize(50, 50)
         button.clicked.connect(callback)
         button.setCursor(QCursor(Qt.PointingHandCursor))
         button.setProperty("class", "recording-button")
-        icon = QIcon(icon_path)
         button.setIcon(icon)
-        button.setIconSize(button.size() * 0.8)  
+        button.setIconSize(QtCore.QSize(35, 35))
         return button
 
     def update_button_states(self, recording=False):
@@ -123,18 +132,18 @@ class AudioRecorderDialog(QDialog):
         self.pause_button.setEnabled(recording)
         self.stop_button.setEnabled(recording)
         
-        for button in [self.start_button, self.pause_button, self.stop_button]:
+        for button in[self.start_button, self.pause_button, self.stop_button]:
             if button.isEnabled():
                 button.setCursor(QCursor(Qt.PointingHandCursor))
             else:
-                button.setCursor(QCursor(Qt.ArrowCursor))
+                button.setCursor(QCursor(Qt.ForbiddenCursor))
 
     def start_recording(self):
+        self.is_paused = False
         if not self.audio_thread.isRunning():
             self.audio_thread.start()
         else:
             self.audio_thread.is_recording = True
-        self.is_paused = False
         self.update_button_states(recording=True)
         self.timer.start(20)
         self.total_samples = 0
@@ -155,12 +164,23 @@ class AudioRecorderDialog(QDialog):
 
     def stop_recording_confirmation(self):
         self.audio_thread.is_recording = False
+        self.timer.stop()
+        self.audio_thread.stop_recording()
         self.audio_thread.wait()  
-        reply = QMessageBox.question(self, 'Save Recording', 'Do you want to save the recording?',
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        msg_box = QMessageBox() 
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setText('Do you want to save the recording?')
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg_box.setDefaultButton(QMessageBox.No)
+        yes_button = msg_box.button(QMessageBox.Yes)
+        no_button = msg_box.button(QMessageBox.No)
+        yes_button.setStyleSheet("QPushButton { background-color: green; color: white; }")
+        no_button.setStyleSheet("QPushButton { background-color: red; color: white; }")
+        reply = msg_box.exec_()
         if reply == QMessageBox.Yes:
             self.save_audio()
-        self.reset_ui()
+        self.close()
+        
 
     def save_audio(self):
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Audio", "recorded_audio.mp3", "MP3 Files (*.mp3)")
@@ -185,6 +205,7 @@ class AudioRecorderDialog(QDialog):
         self.plot_widget.setXRange(0, 1)  
         self.plot_widget.setLabel('bottom', 'Time (s)')
         self.update_button_states(recording=False)
+        self.timer.stop()  # Stop the timer when reset_ui is called
 
     def toggle_pause(self):
         if self.audio_thread.is_recording:
