@@ -23,6 +23,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
+        self.is_running=False
+        self.fileName=None
         self.dark_theme = True
         with open("dark_theme.qss", "r") as f:
             self.setStyleSheet(f.read())
@@ -81,16 +83,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def show_audio_recording_dialog(self):
         if self.filestable.rowCount()>self.capacity:
             self.limit_exceeded()
+            return None
         else:
             self.notification_signal.emit("Recorder on")
             dialog = audio_recorder.AudioRecorderDialog()
             dialog.raise_()
             dialog.file_saved.connect(self.on_file_saved)
             dialog.exec_()
+        return dialog
     def on_file_saved(self, filename):
         self.add_file_to_table([filename])
         self.notification_signal.emit("recording saved")
     def run_button_clicked(self):
+        self.is_running=True
         self.runButton.setEnabled(False)
         self.stopButton.setEnabled(True)
         self.uploadButton.setEnabled(False)
@@ -117,9 +122,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.resultsTable.scrollToItem(self.resultsTable.item(index, 0))
         self.resultsTable_2.scrollToItem(self.resultsTable_2.item(index, 0))
     def stop_button_clicked(self):
+        self.is_running=False
         if self.populate_thread and self.populate_thread.isRunning():
             self.populate_thread.stop()
             self.populate_thread.wait()
+        if self.resultsTable.rowCount()!=0:
+            self.saveButton.setEnabled(True)
+            self.clearButton_2.setEnabled(True)
+        else:
+            self.saveButton.setEnabled(False)
+            self.clearButton_2.setEnabled(False)
         self.stopButton.setEnabled(False)
         self.runButton.setEnabled(True)
 
@@ -414,6 +426,7 @@ class UploadDialog(QDialog):
         self.main_window = MainWindow
         super().__init__()
         self.initUI()
+        
       
     def initUI(self):
         self.setWindowTitle("Upload")
