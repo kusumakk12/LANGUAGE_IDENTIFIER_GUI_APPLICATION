@@ -1,6 +1,6 @@
 import time
 import pandas as pd
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 from layout import Ui_MainWindow
 import audio_recorder
 import csv,os,sys,xlrd,openpyxl
@@ -18,6 +18,7 @@ from PyQt5.QtCore import QObject,QThread,pyqtSlot,QUrl, QDir,Qt, QTimer
 from PyQt5.QtCore import pyqtSignal as Signal
 import warnings, datetime
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     capacity=3
     notification_signal = Signal(str)
@@ -143,7 +144,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearButton_2.setEnabled(True)
         self.uploadButton.setEnabled(True)
         self.recordButton.setEnabled(True)
-        self.clearButton.setEnabled(True)     
+        self.clearButton.setEnabled(True)
+
+        
         
     def clear_button_clicked(self):
         self.saveButton.setEnabled(False)
@@ -280,7 +283,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.filestable.rowCount() < self.capacity:
                 print(file_path)
                 file_name = os.path.basename(file_path)
-                file_size = os.path.getsize(file_path) / 1024  # Convert to KB
+                file_size = os.path.getsize(file_path) / 1024 
                 upload_date = datetime.date.today().strftime("%Y-%m-%d")
                 row_position = self.filestable.rowCount()
                 self.filestable.insertRow(row_position)
@@ -415,6 +418,8 @@ class ToastNotification(QWidget):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.close)
         self.timer.start(5000)
+
+
     def show(self):
         super().show()
 
@@ -423,6 +428,7 @@ class UploadDialog(QDialog):
         self.main_window = MainWindow
         super().__init__()
         self.initUI()
+      
     def initUI(self):
         self.setWindowTitle("Upload")
         self.setGeometry(400, 200, 400, 300)
@@ -435,6 +441,8 @@ class UploadDialog(QDialog):
             font-size: 12px;
         }
         """)
+
+        # Create the drop/upload layout
         drop_widget = QWidget()
         drop_widget.setStyleSheet("""
         QWidget {
@@ -473,7 +481,11 @@ class UploadDialog(QDialog):
         }
         """)
         self.drop_layout.addWidget(self.dropLabel)
+
+        # Add the drop/upload layout to the main layout
         layout.addWidget(drop_widget)
+
+        # Create the browse button
         self.browseButton = QPushButton("Browse File")
         self.browseButton.clicked.connect(self.browseFiles)
         self.browseButton.setStyleSheet("""
@@ -496,13 +508,16 @@ class UploadDialog(QDialog):
             event.accept()
         else:
             event.ignore()
-              
+        
+        
     def dropEvent(self, event):
         paths = [u.toLocalFile() for u in event.mimeData().urls()]
         print(paths)
         self.handleFiles(paths)
         self.close()
         self.main_window.raise_()
+        
+
     def browseFiles(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -514,6 +529,7 @@ class UploadDialog(QDialog):
     def handleFiles(self, paths):
         if not paths:
             return
+        
         if os.path.isdir(paths[0]):
             self.handleFolder(paths[0])
         else:
@@ -641,12 +657,14 @@ class PopulateTableThread(QThread):
                     row_selected = df_selected.iloc[index]  
                     row_full = df.iloc[index]  
                     self.update_row.emit(row_selected, row_full, index)
-                    time.sleep(self.row_delay)            
+                    time.sleep(self.row_delay)
+                    
             except Exception as e:
                 error_msg = f"Error reading file: {str(e)}"
                 print(error_msg)
                 self.error_occurred.emit(error_msg)
         self.finished.emit()
+
     def stop(self):
         self.is_running = False
         
