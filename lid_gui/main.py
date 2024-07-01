@@ -155,6 +155,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.uploadButton.setEnabled(True)
         self.stopButton.setEnabled(False)
         self.statusbar.showMessage("results have been cleared")
+        self.notification_signal.emit("Results cleared")
         self.resultsTable.setRowCount(0)
         self.resultsTable_2.setRowCount(0)
         
@@ -311,6 +312,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 widget.setLayout(layout)
                 self.filestable.setCellWidget(row_position, 2, widget)
+                self.notification_signal.emit("Files uploaded")
             else:
                 QMessageBox.information(self.centralwidget, "Information!", 'Uploaded more files than the processing capacity for a time! only few files are uploaded', buttons=QMessageBox.Ok)
                 break
@@ -327,6 +329,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if self.reply == QMessageBox.Yes:
             self.filestable.removeRow(row_position)
+            self.notification_signal.emit("File deleted")
         if self.filestable.rowCount()==self.capacity:
             self.spinner.setEnabled(True)
             self.spinner.setCurrentIndex(0)
@@ -372,6 +375,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_plus_symbol()
         self.resultsTable.setRowCount(0)
         self.resultsTable_2.setRowCount(0)
+        self.notification_signal.emit("Window reset")
         self.saveButton.setEnabled(False)
         self.clearButton.setEnabled(False)
         self.runButton.setEnabled(False)
@@ -442,7 +446,6 @@ class UploadDialog(QDialog):
         }
         """)
 
-        # Create the drop/upload layout
         drop_widget = QWidget()
         drop_widget.setStyleSheet("""
         QWidget {
@@ -481,11 +484,7 @@ class UploadDialog(QDialog):
         }
         """)
         self.drop_layout.addWidget(self.dropLabel)
-
-        # Add the drop/upload layout to the main layout
         layout.addWidget(drop_widget)
-
-        # Create the browse button
         self.browseButton = QPushButton("Browse File")
         self.browseButton.clicked.connect(self.browseFiles)
         self.browseButton.setStyleSheet("""
