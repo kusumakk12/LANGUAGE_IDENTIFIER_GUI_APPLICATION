@@ -1,0 +1,28 @@
+externally Required libraries to install:
+# for main.py
+1.pandas-for reading and acessing data as a dataframe 
+2.PyQt5 - desktop application framework
+4.PyQt5 tools [includes qt designer]
+5.xlrd - more feasible libraries used along with csv for accessing excel files
+6.openpyxl - for opening excel files to read
+
+# audio_recorder.py
+1.pyaudio
+2.wave
+3.numpy
+4.pyqtgraph
+5.scipy
+
+By deafault libraries in python which are used:
+1.CSV- for reading the excel fies and saving results as a csv file
+2.OS 
+3.threading module -for multiple tasks processing (multi threading)
+
+Required file to import :
+1.layout.py - plain layout
+2.dark_theme.qss - layout design and palatte for dark mode
+3.light_theme.qss - layout design and palatte for light mode
+4.audio_recorder.py - to implement tasks for recording the audio on spot
+5.resourcse.qrc - list of required images 
+6.resources_rc.py - python file for images in resources.qrc
+
